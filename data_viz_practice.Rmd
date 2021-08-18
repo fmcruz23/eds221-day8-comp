@@ -129,3 +129,40 @@ ggplot(data = lizard_counts, aes(x = date, y = n)) +
 
 ```
 
+
+```{r}
+ggplot(lizards, aes(x = total_length, y = weight)) +
+  geom_point(aes(color = weight)) +
+  scale_color_stepsn(colors = c("green", "blue", "purple"), 
+                     breaks = c(0, 10, 20, 40, 50) )
+
+```
+
+### Update a color scheme using a palette in paletteer 
+Make a horizontal box plot
+```{r}
+lizards_fct <- lizards %>% 
+  mutate(common_name = fct_reorder(common_name, total_length, .fun = median))
+
+ggplot(lizards_fct, aes(x = total_length, y = common_name)) +
+  geom_boxplot(aes(fill = common_name), show.legend = FALSE) +
+  scale_fill_paletteer_d(palette = "miscpalettes::sunset")
+
+```
+
+```{r}
+ggplot(lizards_fct, aes(x = total_length, y = weight)) +
+  geom_point()+
+  theme(
+   panel.grid = element_blank(),
+   plot.background = element_rect(fill = "cyan"),
+   axis.text.x = element_text(color = "orange"),
+   axis.title = element_text(color = "yellow", size = 15)
+  )
+
+```
+
+
+
+
+
