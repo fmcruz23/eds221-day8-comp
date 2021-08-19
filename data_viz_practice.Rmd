@@ -162,7 +162,123 @@ ggplot(lizards_fct, aes(x = total_length, y = weight)) +
 
 ```
 
+## ggrepel 
+```{r}
+ww_lizards <- lizards %>% 
+  filter(common_name == "western whiptail" & site == "sand")
+
+ggplot(ww_lizards, aes(x = total_length, y = weight)) +
+  geom_point() +
+  geom_text_repel(aes(label = toe_num), size = 3, max.overlaps = 20)
+```
+
+```{r}
+#View(gapminder)
+
+europe <- gapminder %>% 
+  filter(continent == "Europe", year == 2002) 
+
+ggplot(europe, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point() +
+  geom_text_repel(aes(label = country), size = 3)
+
+```
+## gghighlight 
+```{r}
+p <- ggplot(lizards, aes(x = total_length, y = weight)) +
+  geom_point()
+
+p + gghighlight(toe_num == 250, label_key = toe_num)
+
+```
+
+```{r}
+q <- ggplot(data = lizards, aes(x = total_length, y = weight)) +
+  geom_line(aes(color = common_name)) +
+  gghighlight(max(weight) > 30)
+
+q 
+```
+## patchwork for compound figures
+```{r}
+(p | q) / q &
+  theme_dark()
 
 
+```
+
+## A few new graph types 
+
+### Marginal Plots 
+```{r}
+whiptails <- lizards %>% 
+  filter(common_name == "western whiptail") %>% 
+  drop_na(total_length, weight)
+
+ggplot(whiptails, aes(x = total_length, y = weight)) +
+  geom_point() +
+  geom_rug()
+
+```
+
+Marginal plot with boxplots 
+```{r}
+plot <- ggplot(whiptails, aes(x = total_length, y = weight)) +
+  geom_point(aes(color = sex), size = 2) +
+  scale_color_manual(values = c("cyan4", "black", "goldenrod"),
+                     name = "Sex:",
+                     labels = c("female", "juvenile", "male")) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+ggMarginal(plot, type = "boxplot", groupColour = TRUE)
+
+```
+
+### Beeswarm plot
+```{r}
+ggplot(data = whiptails, aes(x = sex, y = weight)) +
+  geom_beeswarm() +
+  geom_boxplot(fill = NA)
+
+
+```
+### A heatmap with geom_tile()
+
+Make a new dataframe called lizard_counts, starting with lizards, with date converted to class Date. Then count by year and common name the number of lizards observed.
+```{r}
+lizards_counts <- lizards %>% 
+  mutate(date = lubridate::mdy(date)) %>%
+  mutate(year = lubridate::year(date)) %>% 
+  group_by(year, common_name) %>% 
+  summarize(count = n())
+
+## can also use count(year, common_name)
+```
+
+
+```{r}
+ggplot(data = lizards_counts, aes(x = year, y = common_name)) +
+  geom_tile(aes(fill = count)) +
+  geom_text(aes(label = count), color = "white", size = 3) +
+  scale_fill_viridis_c()
+
+```
+
+### Make a map!
+```{r}
+jornada_veg <- read_sf(here("data_raw", "spatial_vegetation", "doc.kml")) %>% 
+  select(Name) %>%
+  clean_names()
+  
+
+ggplot(data = jornada_veg) +
+  geom_sf(aes(fill = name), color = NA) + 
+  scale_fill_paletteer_d(palette = "ggthemes::manyeys") +
+  labs(x = "Longitude", 
+       y = "Latitude",
+       fill = "Dominant Vegetation") +
+  theme_void()
+```
 
 
